@@ -88,9 +88,12 @@ class Main extends React.Component {
                     <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/test_modal',this.state);
                     }}>转到 Table Modal</Button>
-                    <Button onClick={e=>{
+                    <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/window',this.state);
                     }}>转到 Window</Button>
+                    <Button onClick={e=>{
+                        this.props.history.push('/test_table',this.state);
+                    }}>转到 Table Scroll</Button>
                 </Container>
                 <Container className='p-0 mb-1' inline fluid>
                     <Input className='mr-1' disabled size='sm' absolute x='50px' y='150px' width='100px' placeholder='用户名' onChange={this.changeHandler('user_name')} data={this.state.pageData.user_name}/>
@@ -236,7 +239,11 @@ class Main extends React.Component {
                             return <Button className='color-blue' size='xs' icon='plus'>Add</Button>
                         }} />
                     </Table>
-                    <Pagination size='sm' count={1000} current={1} number={30} showPage={10}/>
+                    <Pagination size='sm' numberList={[
+                        {text:'每页显示30条',value:30},{text:'每页显示50条',value:50}
+                    ]} count={1000} current={1} number={50} showPage={10} onSelect={(page,showNumber)=>{
+                        console.log(page,showNumber)
+                    }}/>
                 </Card>
                 <Card header='Calendar'>
                     <Calendar value={this.state.chose_date} lang='en' shadow/>
