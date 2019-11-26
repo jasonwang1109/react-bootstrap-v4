@@ -15,9 +15,9 @@ import {
     Select,
     Calendar,
     Switch,
-    RImage
+    RImage,
+    Modal
 } from '../../../src/index';
-import Modal from "../../../src/Modal";
 
 class Jump extends React.PureComponent {
     constructor(props) {
@@ -150,6 +150,10 @@ class Jump extends React.PureComponent {
                         }} />
                     </Table>
                 </Card>
+                <Card header='Test Image Component' height='500px' scroll>
+                    <RImage height='50px' width='50px' border circle/>
+                </Card>
+                <hr/>
             </Container>
         );
     }

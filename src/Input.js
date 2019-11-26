@@ -23,6 +23,9 @@ class Input extends React.Component {
         if (this.props.id) {
             this.domId = this.props.id;
         }
+
+        //combo show
+
     }
 
     componentDidMount() {
@@ -137,7 +140,7 @@ class Input extends React.Component {
         base = classNames(base, size);
 
         if (!this.state.validate) {
-            base = classNames(base, 'is-invalid');
+            base = classNames(base, 'ck-input-valid');
         }
 
         if (this.props.calendar || this.props.combo) {
@@ -207,7 +210,7 @@ class Input extends React.Component {
 
     /**
      * Combo select event
-     * @param text string
+     * @param text stringminimist
      * @param row object
      */
     selectHandler = (text, row) => {
@@ -302,7 +305,7 @@ class Input extends React.Component {
         return (
             <div className='ck-input-calendar'>
                 <Combo ref={c => this.combo = c} {...this.props.combo} sm={this.props.size === 'sm' || this.props.size === 'xs'}
-                       data={this.state.comboData} noSearch={this.props.readOnly}
+                       data={this.state.comboData} noSearch={this.props.readOnly} onShow={()=>{}}
                        onSelect={this.selectHandler}/>
                 <div className={input_icon} onClick={() => {
                     this.input.focus();
@@ -322,9 +325,9 @@ class Input extends React.Component {
                        className={this.getInputClasses()}
                        style={this.getInputStyle()}
                        id={this.domId}/>
-                {this.renderSummary()}
                 {this.renderCalendar()}
                 {this.renderCombo()}
+                {this.renderSummary()}
             </div>
         );
     }
@@ -345,7 +348,7 @@ Input.propTypes = {
     onEnter       : PropTypes.func,
     plaintext     : PropTypes.bool,
     calendarFormat: PropTypes.string,
-    validate      : PropTypes.object,
+    validate      : PropTypes.object,  //{text:'',rule:/asdf/}
     disabled      : PropTypes.bool,
     combo         : PropTypes.object,
     comboData     : PropTypes.object,

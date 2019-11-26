@@ -43,47 +43,60 @@ class Menu extends React.PureComponent {
         this.height = this.mainDom.clientHeight;
         this.width = this.mainDom.clientWidth;
         if (option.type === 'mouse') {
-            let y = option.evt.pageY;
-            let x = option.evt.pageX;
-            if (option.evt.pageY + this.mainDom.clientHeight >
-                document.documentElement.scrollTop + document.documentElement.clientHeight) {
-                y -= this.mainDom.clientHeight;
-                if (y < 0) {
-                    y = 0;
-                }
-            }
+            let fixPosition = this.fixPositionScreen(option.evt.pageX,option.evt.pageY);
 
-            if (option.evt.pageX + this.mainDom.clientWidth >
-                document.documentElement.scrollLeft + document.documentElement.clientWidth) {
-                x -= this.mainDom.clientWidth;
-            }
-
-            this.mainDom.style.top = y + 'px';
-            this.mainDom.style.left = x + 'px';
+            this.mainDom.style.top = fixPosition.y + 'px';
+            this.mainDom.style.left = fixPosition.x + 'px';
         } else {
             let pos = GetDomXY(option.evt.currentTarget);
+            let fixPos;
             switch (option.type) {
                 case 'dom-top':
-                    this.mainDom.style.top = (pos.top-this.height)+'px';
-                    this.mainDom.style.left = pos.left+'px';
-                    break;
-                case 'dom-right':
-                    this.mainDom.style.top = pos.top+'px';
-                    this.mainDom.style.left = (pos.left+option.evt.currentTarget.clientWidth)+'px';
+                    fixPos = {
+                        x:pos.left,
+                        y:(pos.top-this.height)
+                    };
                     break;
                 case 'dom-bottom':
-                    this.mainDom.style.top = (pos.top+option.evt.currentTarget.clientHeight)+'px';
-                    this.mainDom.style.left = pos.left+'px';
+                    fixPos = {
+                        x:pos.left,
+                        y:(pos.top+option.evt.currentTarget.clientHeight)
+                    };
                     break;
                 case 'dom-left':
-                    this.mainDom.style.top = pos.top+'px';
-                    this.mainDom.style.left = (pos.left-this.width)+'px';
+                    fixPos = {
+                        x:(pos.left-this.width),
+                        y:pos.top
+                    };
                     break;
+                case 'dom-right':
                 default:
-                    this.mainDom.style.top = pos.top+'px';
-                    this.mainDom.style.left = (pos.left+option.evt.currentTarget.clientWidth)+'px';
+                    fixPos = this.fixPositionScreen(
+                        pos.left+option.evt.currentTarget.clientWidth,
+                        pos.top,
+                        -option.evt.currentTarget.clientWidth,
+                        option.evt.currentTarget.clientHeight);
+
             }
+            this.mainDom.style.top = fixPos.y + 'px';
+            this.mainDom.style.left = fixPos.x + 'px';
         }
+    }
+
+    fixPositionScreen(x,y,offx=0,offy=0) {
+        let fx=x,fy=y;
+        if (y + this.mainDom.clientHeight >
+            document.documentElement.scrollTop + document.documentElement.clientHeight) {
+            fy = fy - this.mainDom.clientHeight + offy;
+            if (fy < 0) fy = 0;
+        }
+
+        if (x + this.mainDom.clientWidth >
+            document.documentElement.scrollLeft + document.documentElement.clientWidth) {
+            fx = fx - this.mainDom.clientWidth + offx;
+            if (fx < 0) fx = 0;
+        }
+        return {x:fx,y:fy}
     }
 
     hide = (e)=>{
@@ -98,6 +111,7 @@ class Menu extends React.PureComponent {
         this.childMenus.forEach((item)=>{
             if (item && typeof item.hide === 'function') {
                 item.hide(e);
+                item.closeChild(e);
             }
         })
     }
@@ -167,12 +181,12 @@ class MenuItem extends React.PureComponent {
         if (typeof this.props.onClick === "function") {
             this.props.onClick(e,this.props.field,this.parent.data);
             this.parent.hide(e);
-        } else {
-            this.parent.clickHandler(e,this.props.field);
         }
+        this.parent.clickHandler(e,this.props.field);
     };
 
     showChildHandler = (e)=>{
+        this.parent.closeChild(e);
         this.childMenu.show({evt:e,type:'dom',data:this.parent.data});
     };
 
@@ -210,7 +224,7 @@ class MenuItem extends React.PureComponent {
                      onMouseOver={this.showChildHandler}>
                     <span>{this.props.text}</span>
                     <span className='ml-auto'>
-                        <Icon icon='caret-right'/>
+                        &nbsp;&nbsp;<Icon icon='caret-right'/>
                     </span>
                 </div>
                 <Menu ref={c=>{this.childMenu=c;this.parent.childMenus.push(c)}} zIndex={this.parent.props.zIndex+1} onClick={(key)=>{

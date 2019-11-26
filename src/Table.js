@@ -74,6 +74,8 @@ class Table extends React.Component {
                         let matchs = item.props.width.match(reg);
                         this.width += parseInt(matchs[1]);
                         unit       = matchs[2];
+                    } else {
+                        unit = 100;
                     }
                 }
             });
@@ -154,6 +156,7 @@ class Table extends React.Component {
             item.setChecked(this.select_all);
             this.setRowCheck(this.select_all,idx);
         });
+        this.checkAllCheckHalf();
     };
 
     /**
@@ -262,7 +265,9 @@ class Table extends React.Component {
         if (this.width) {
             base.width = this.width;
         }
-
+        if (this.props.height) {
+            base.transformStyle = 'preserve-3d';
+        }
         return base;
     }
 
@@ -275,7 +280,7 @@ class Table extends React.Component {
     }
 
     scrollHandler = (e) => {
-        this.tableHeader.style.transform = `translateY(${e.currentTarget.scrollTop}px)`;
+        this.tableHeader.style.transform = `translate3d(0,${e.currentTarget.scrollTop}px,10px)`;
     };
 
     render() {
@@ -288,7 +293,7 @@ class Table extends React.Component {
                         </Button>) : null}
                     <table className={this.getClasses()} style={this.getTableStyles()}>
                         {this.props.header ? this.renderHeader() : null}
-                        <tbody>
+                        <tbody style={{'transform':'translateZ(1px)'}}>
                         {this.renderBody()}
                         </tbody>
                     </table>
@@ -343,9 +348,8 @@ class Table extends React.Component {
     renderBody() {
         if (!this.state.data || this.state.data.length <= 0) {
             let columnCount = React.Children.count(this.props.children);
-            if (this.state.select) {
-                columnCount += 1;
-            }
+            if (this.props.select) columnCount += 1;
+            if (this.props.serialNumber) columnCount += 1;
             return <tr>
                 <td align="center" colSpan={columnCount}>{this.props.emptyText}</td>
             </tr>;
@@ -462,7 +466,7 @@ class Table extends React.Component {
                                 })}</td>
                             );
                         } else {
-                            return <td style={style} key={'col_' + key}>{parent}{dynamic_tree||row.children?tree:null}{item.props.onFormat ? item.props.onFormat(row[item.props.field], row) : row[item.props.field]}</td>;
+                            return <td style={style} key={'col_' + key}>{parent}{dynamic_tree||row.children?tree:null}{item.props.onFormat ? item.props.onFormat(row[item.props.field], row,i) : row[item.props.field]}</td>;
                         }
                     })}
                 </tr>
@@ -528,7 +532,7 @@ Table.defaultProps = {
     striped    : true,
     fixed: false,
     align      : 'left',
-    emptyText  : 'no data',
+    emptyText  : 'Not data',
     serialNumber: true,
 };
 
