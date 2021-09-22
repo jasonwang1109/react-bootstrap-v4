@@ -228,6 +228,18 @@ export var Clone = (obj) => {
     return JSON.parse(JSON.stringify(obj));
 };
 
+export function hasScrolledParent(el, direction = "vertical") {
+    while ((el = el.offsetParent) && el !== undefined) {
+        if(direction === "vertical") {
+            let overflow = window.getComputedStyle(el).overflowY;
+            let isScroll = overflow === 'scroll' || overflow === 'auto';
+            if (el.scrollHeight > el.clientHeight && isScroll) return el;
+        } else if(direction === "horizontal") {
+            if (el.scrollWidth > el.clientWidth) return el;
+        }
+    }
+}
+
 export default {
     extend:extend,
     GetDomXY:GetDomXY,
@@ -241,4 +253,5 @@ export default {
     under2hump:under2hump,
     explainUrl:explainUrl,
     Clone:Clone,
+    hasScrolledParent,
 };

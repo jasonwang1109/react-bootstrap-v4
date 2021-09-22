@@ -24,7 +24,12 @@ TableHeader.propTypes = {
     hide: PropTypes.bool,
     tree: PropTypes.bool,
     width: PropTypes.string,
-    onClickTree: PropTypes.func
+    onClickTree: PropTypes.func,
+    //static head
+    afterHold: PropTypes.bool,
+    beforeHold: PropTypes.bool,
+    //edit
+    edit: PropTypes.object,
 };
 
 TableHeader.defaultProps = {
@@ -34,7 +39,9 @@ TableHeader.defaultProps = {
     row:null,
     onFormat:null,
     onSort:null,
-    align:'left'
+    align:'left',
+    hold:false,
+    edit:null,
 };
 
 export default TableHeader;

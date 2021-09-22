@@ -3,14 +3,28 @@ import PropTypes from 'prop-types';
 import classNames from 'classnames/bind';
 import Icon from './Icon';
 import './css/Button.less';
+import common from "./Common";
 
 class Button extends React.PureComponent {
     constructor(props) {
         super(props);
+        this.domId = 'btn-'+common.RandomString(16);
+    }
+
+    componentDidMount() {
+        if (this.props.tip) {
+            $('#'+this.domId).tooltip({'trigger':'hover'});
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.props.tip) {
+            $('#'+this.domId).tooltip('dispose');
+        }
     }
 
     getClasses() {
-        let base = 'btn';
+        let base = 'btn ck-btn';
         let base_style = ['btn'];
         //is outline theme
         if (this.props.outline) {
@@ -65,10 +79,20 @@ class Button extends React.PureComponent {
 
     render() {
         return (
-            <button {...this.props} disabled={this.props.disabled} onClick={this.clickHandler} className={this.getClasses()} style={this.getStyles()}>
+            <button {...this.props} {...this.renderTip()} id={this.domId} disabled={this.props.disabled} onClick={this.clickHandler} className={this.getClasses()} style={this.getStyles()} title={this.props.tip}>
                 {this.renderIcon()}{this.props.children}
             </button>
         );
+    }
+
+    renderTip() {
+        if (!this.props.tip) {
+            return {}
+        }
+        return {
+            'data-toggle':"tooltip",
+            'data-placement':"bottom"
+        };
     }
 
     renderIcon() {
@@ -103,7 +127,8 @@ Button.propTypes = {
     x          : PropTypes.string,
     y          : PropTypes.string,
     width      : PropTypes.string,
-    height     : PropTypes.string
+    height     : PropTypes.string,
+    tip: PropTypes.string,
 };
 
 Button.defaultProps = {

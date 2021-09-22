@@ -1,8 +1,5 @@
 .ck-table {
   margin-bottom: 0 !important;
-  &.fixed {
-    table-layout: fixed;
-  }
   th,td {
     vertical-align: middle!important;
     font-size: .9rem;
@@ -42,18 +39,28 @@
   }
 
   .chk {
-    width: 20px;
     text-align: center;
+    padding-left: .2rem!important;
+    padding-right: .2rem!important;
+  }
+
+  .colspan {
+    border-right: 2px solid;
+    &:last-child{
+      border-right: none;
+    }
   }
 }
 
 .ck-table-main {
-
+  .fixed {
+    table-layout: fixed;
+  }
 }
 
 .table-font-sm {
   td,th {
-    font-size: .75rem!important;
+    font-size: .85rem!important;
   }
 }
 
@@ -76,4 +83,25 @@
 
 .ck-table-selected {
   background-color: #e5f0ff!important;
+}
+
+.ck-table-hold-after {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: #ffffff;
+
+  .shadow {
+    box-shadow: -3px 0 8px -4px #999 !important;
+  }
+}
+
+.ck-table-hold-before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #ffffff;
+  .shadow {
+    box-shadow: 3px 0 8px -4px #999 !important;
+  }
 }

@@ -1,100 +1,47 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import classNames from 'classnames/bind';
-import common from "./Common";
-import './css/Dropdown.less';
+import Input from "./Input";
 
-class CDropdown extends React.PureComponent {
+class CDropdown extends React.Component {
     constructor(props) {
         super(props);
+
+        this.listData = this.props.data;
         this.state = {
-            text: this.props.text,
-            value: '',
-            list: this.props.data,
+            data:this.props.data
         };
-
-        if (!this.props.id) {
-            this.props.id = 'cdrop-'+common.RandomString(16);
-        }
-    }
-
-    componentDidMount() {
-
-    }
-
-    componentWillReceiveProps(nextProp) {
-        this.setState({
-            text: nextProp.text,
-            list: nextProp.data
-        })
-    }
-
-    getClasses() {
-        let base = 'form-group';
-
-        return classNames(base,this.props.className);
-    }
-
-    getStyles() {
-        //default style
-        let base = {"position": "relative"};
-        if (this.props.width) {
-            base.width = this.props.width;
-        }
-        if (this.props.height) {
-            base.height = this.props.height;
-        }
-        if (this.props.absolute) {
-            base.position = 'absolute';
-        }
-        if (this.props.x) {
-            base.left = this.props.x;
-        }
-        if (this.props.y) {
-            base.top = this.props.y;
-        }
-        if (!this.props.label) {
-            base.marginBottom = '0';
-        }
-
-        return common.extend(base, this.props.style)
-    }
-
-    getDropClasses() {
-        let base = 'form-control ck-dropdown';
-        return classNames(base, this.props.dropClass);
-    }
-
-    getDropStyles() {
-
-    }
-
-    renderLabel() {
-        if (this.props.label === '') {
-            return null;
-        }
-        return (
-            <label htmlFor={this.domId}>{this.props.label}</label>
-        )
-    }
-
-    renderList() {
-        return (
-            <div className='ck-dropdown-list'>
-
-            </div>
-        )
     }
 
     render() {
+        let active;
+        if (React.Children.count(this.props.children)) {
+            let list = [];
+            React.Children.forEach(this.props.children, (item, key) => {
+                if (item.type === CDropdownValue) {
+                    list.push({
+                        text: item.props.text,
+                        value: item.props.value,
+                    });
+                    if (item.props.active) {
+                        active = item.props.text;
+                    }
+                }
+            });
+            this.listData = list;
+        }
         return (
-            <div className={this.getClasses()} style={this.getStyles()}>
-                {this.renderLabel()}
-                <div className={this.getDropClasses()} style={this.getDropStyles()}>
-                    {this.state.text}
-                </div>
-                {this.renderList()}
-            </div>
+            <Input className={this.props.className} width={this.props.width} combo={{
+                searchColumn:'text',
+                noSearch:true,
+                width: this.props.dropWidth,
+                filterColumns: ['text'],
+                showRows: this.props.showRows,
+            }} comboData={this.listData} label={this.props.label} readOnly
+                   onChange={this.props.onChange}
+                   placeholder={this.props.text}
+                   data={active??this.props.data}
+                   size={this.props.size}
+            />
         );
     }
 }
@@ -102,19 +49,29 @@ class CDropdown extends React.PureComponent {
 CDropdown.propTypes = {
     data: PropTypes.array,
     text: PropTypes.string,
-    onChange: PropTypes.func,
-    width: PropTypes.string,
-    height:PropTypes.string,
-    absolute: PropTypes.bool,
-    x: PropTypes.string,
-    y: PropTypes.string,
     label: PropTypes.string,
-    dropClass: PropTypes.string
+    value: PropTypes.string,
+    onChange: PropTypes.func,
+    showRows: PropTypes.number,
+    size: PropTypes.string,
+    dropWidth: PropTypes.string,
+    width: PropTypes.string,
 };
 
 CDropdown.defaultProps = {
-    data: [],
+    data: '',
     text: '',
+    showRows: 5,
+    dropWidth: '100%',
 };
+
+class CDropdownValue extends React.Component {}
+CDropdownValue.propTypes = {
+    text: PropTypes.string,
+    value: PropTypes.string,
+    active: PropTypes.bool
+};
+
+CDropdown.Value = CDropdownValue;
 
 export default CDropdown;

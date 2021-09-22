@@ -3,12 +3,13 @@ import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 import classNames from 'classnames/bind';
 import Input from './Input';
-import Checkbox from './Checkbox';
+import CCheckbox from './CCheckbox';
 import Select from './Select';
 import TextArea from './TextArea';
 import {map} from './Common';
 import Dropdown from "./Dropdown";
 import Switch from './Switch';
+import CDropdown from './CDropdown';
 
 class Form extends React.PureComponent {
     constructor(props) {
@@ -65,7 +66,7 @@ class Form extends React.PureComponent {
         return (val,row)=>{
             this.vals[field] = {text:val,value:row};
             if (typeof this.props.onChange === 'function') {
-                this.props.onChange(field,val,row);
+                this.props.onChange(field,val,row,true);
             }
             if (typeof this.events[field] === 'function') {
                 this.events[field](val,row);
@@ -97,14 +98,26 @@ class Form extends React.PureComponent {
         }
     }
 
-    checkChangeHandler(field) {
-        return (e)=>{
-            this.vals[field] = e.target.checked;
+    cdropdownChangeHandler(field) {
+        return (text,row)=>{
+            this.vals[field] = row?.value;
             if (typeof this.props.onChange === 'function') {
-                this.props.onChange(field,e.target.checked);
+                this.props.onChange(field,row?.text,row?.value);
             }
             if (typeof this.events[field] === 'function') {
-                this.events[field](e);
+                this.events[field](row?.text,row?.value);
+            }
+        }
+    }
+
+    checkChangeHandler(field) {
+        return (checked)=>{
+            this.vals[field] = checked;
+            if (typeof this.props.onChange === 'function') {
+                this.props.onChange(field,checked);
+            }
+            if (typeof this.events[field] === 'function') {
+                this.events[field](checked);
             }
         };
     };
@@ -132,7 +145,7 @@ class Form extends React.PureComponent {
         if (typeof item !== 'object') {
             return;
         }
-        if (typeof item.props.children === 'object') {
+        if (typeof item.props.children === 'object' && item.type !== CDropdown) {
             React.Children.map(item.props.children,(child_item)=>{
                 this.bindingComponent(child_item);
             });
@@ -165,7 +178,7 @@ class Form extends React.PureComponent {
                 }
                 item.props.onSelect = this.selectChangeHandler(field);
                 // item.props.ref = this.refComponent(field);
-            } else if (item.type === Checkbox) {
+            } else if (item.type === CCheckbox) {
                 if (typeof item.props.onChange === 'function') {
                     this.events[field] = item.props.onChange;
                 }
@@ -182,6 +195,11 @@ class Form extends React.PureComponent {
                     this.events[field] = item.props.onChange;
                 }
                 item.props.onChange = this.dropdownChangeHandler(field);
+            } else if (item.type === CDropdown) {
+                if (typeof item.props.onChange === 'function') {
+                    this.events[field] = item.props.onChange;
+                }
+                item.props.onChange = this.cdropdownChangeHandler(field);
             } else if (item.type === Switch) {
                 if (typeof item.props.onChange === 'function') {
                     this.events[field] = item.props.onChange;

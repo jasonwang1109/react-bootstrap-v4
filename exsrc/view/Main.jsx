@@ -81,7 +81,7 @@ class Main extends React.Component {
                 <Container fluid className='mb-1 p-0'>
                     <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/skill/jump',this.state);
-                    }}>转到内联</Button>
+                    }} tip="转到内联">转到内联</Button>
                     <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/coupon',this.state);
                     }}>转到 Demo2</Button>
@@ -91,9 +91,15 @@ class Main extends React.Component {
                     <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/window',this.state);
                     }}>转到 Window</Button>
-                    <Button onClick={e=>{
+                    <Button className='mr-1' onClick={e=>{
                         this.props.history.push('/test_table',this.state);
                     }}>转到 Table Scroll</Button>
+                    <Button className='mr-1' onClick={e=>{
+                        this.props.history.push('/test_triangle',this.state);
+                    }}>转到 Triangle</Button>
+                    <Button className='mr-1' onClick={e=>{
+                        this.props.history.push('/test_edit',this.state);
+                    }}>转到 HTML Edit</Button>
                 </Container>
                 <Container className='p-0 mb-1' inline fluid>
                     <Input className='mr-1' disabled size='sm' absolute x='50px' y='150px' width='100px' placeholder='用户名' onChange={this.changeHandler('user_name')} data={this.state.pageData.user_name}/>
@@ -130,14 +136,15 @@ class Main extends React.Component {
                     </div>
                     <div className='form-row'>
                         <Input className='col-6' label='Calendar Unix Timestamp' data='1518427253' calendarFormat='unix' calendar readOnly/>
-                        <Input className='col-6' size='sm' label='Calendar' data={this.state.pageData.chose_date} onChange={this.changeHandler('chose_date')} calendar readOnly/>
+                        <Input className='col-6' size='sm' label='Calendar' calendarTime={true} calendarFormat='YYYY-MM-DD H:I:S' data={this.state.pageData.chose_date} onChange={this.changeHandler('chose_date')} calendar readOnly/>
                     </div>
                     <div className='form-row'>
                         <Input className='col-6' size='lg' label='Calendar' data={this.state.pageData.chose_date} onChange={this.changeHandler('chose_date')} calendar readOnly/>
                         <Input className='col-6' size='xs' label='Calendar' data={this.state.pageData.chose_date} onChange={this.changeHandler('chose_date')} calendar readOnly/>
                     </div>
-                    <TextArea label='Summary' summary='input something' data={this.state.pageData.text_area} rows={10}/>
-                    <TextArea height='33px' width='400px' size='xs'/>
+                    <TextArea label='Summary' htmlMode height='500px' data={this.state.pageData.text_area}/>
+
+                    <TextArea label='Summary' height='500px' data={this.state.pageData.text_area}/>
                 </Card>
                 <Card header='absolute card small size' absolute sm x='0' y='0' width='100px' height='100px'>
 

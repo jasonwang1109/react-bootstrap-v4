@@ -4,7 +4,7 @@ import classNames from 'classnames/bind';
 import './css/Image.less';
 import Icon from './Icon';
 
-class RImage extends React.PureComponent {
+class RImage extends React.Component {
     constructor(props) {
         super(props);
         let is_load,src=null;
@@ -32,9 +32,11 @@ class RImage extends React.PureComponent {
         let img = new Image();
         img.onload = ()=>{
             img.onload = null;
-            let dis = 'vertical';
+            let dis = '';
             if (img.width > img.height) {
                 dis = 'horizontal';
+            } else if (img.height > img.width) {
+                dis = 'vertical';
             }
             this.setState({
                 isLoad:true,

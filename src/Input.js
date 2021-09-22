@@ -8,6 +8,9 @@ import Icon from "./Icon";
 import i18n from './components/i18n';
 
 import './css/Input.less';
+const stopEvent  = function (e) {
+    e.stopPropagation();
+};
 
 class Input extends React.Component {
     constructor(props) {
@@ -16,7 +19,8 @@ class Input extends React.Component {
             value    : this.props.data,
             validate : true,
             disabled : this.props.disabled,
-            comboData: this.props.comboData
+            comboData: this.props.comboData,
+            icon: this.props.combo?'angle-down':this.props.calendar?'calendar-alt':'',
         };
 
         this.domId = 'input-' + common.RandomString(16);
@@ -24,8 +28,7 @@ class Input extends React.Component {
             this.domId = this.props.id;
         }
 
-        //combo show
-
+        this.isFocus = false;
     }
 
     componentDidMount() {
@@ -33,9 +36,7 @@ class Input extends React.Component {
             this.input.addEventListener('focus', (e) => {
                 this.calendar.show(e.currentTarget);
             }, false);
-            this.input.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-            }, false);
+
             // $(ReactDOM.findDOMNode(this.input)).on('focus', (e) => {
             //     this.calendar.show(e.currentTarget);
             // });
@@ -47,9 +48,27 @@ class Input extends React.Component {
             this.input.addEventListener('focus', (e) => {
                 this.combo.show(this.state.value,e.currentTarget);
             }, false);
-            this.input.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-            }, false);
+        }
+        this.input.addEventListener('focus', this.focusClearHandler, false);
+        this.input.addEventListener('blur', this.blurClearHandler, false);
+        this.input.addEventListener('mousedown',stopEvent, false);
+        if (this.props.validate) {
+            let options = {
+                'trigger':'manual',
+                'template':'<div class="tooltip ck-input-tip" role="tooltip"><div class="arrow"></div><div class="tooltip-inner bg-danger"></div></div>',
+            };
+            $('#'+this.domId).tooltip(options);
+        }
+
+        if (this.props.multi) {
+            this.input.addEventListener('focus', this.showMulti, false);
+            this.input.addEventListener('blur', this.hideMulti, false);
+        }
+    }
+
+    componentWillUnmount() {
+        if (this.props.validate) {
+            $('#'+this.domId).tooltip('dispose');
         }
     }
 
@@ -71,6 +90,9 @@ class Input extends React.Component {
             return true
         }
         if (nextState.validate !== this.state.validate) {
+            return true
+        }
+        if (nextState.icon !== this.state.icon) {
             return true
         }
         return nextState.value !== this.state.value;
@@ -114,7 +136,7 @@ class Input extends React.Component {
         return common.extend(base, this.props.style)
     }
 
-    getInputClasses() {
+    getInputClasses(append) {
         let base = 'form-control ck-input';
         //readonly
         if (this.props.plaintext) {
@@ -155,7 +177,11 @@ class Input extends React.Component {
             base = classNames(base, `text-${this.props.align}`)
         }
 
-        return classNames(base, this.props.textClass);
+        if (this.props.multi) {
+            base = classNames(base, `ck-input-multi`)
+        }
+
+        return classNames(base, this.props.textClass, append);
     }
 
     getInputStyle() {
@@ -165,6 +191,8 @@ class Input extends React.Component {
         }
         if (this.props.height) {
             base.height = this.props.height;
+        } else if (this.props.multi) {
+            base.height = 'calc(1.5em + .75rem + 2px)';
         }
         return common.extend(base, this.props.textStyle)
     }
@@ -179,7 +207,9 @@ class Input extends React.Component {
 
     validate(val) {
         if (this.props.validate) {
-            return this.props.validate.rule.test(val);
+            let valid = this.props.validate.rule.test(val);
+                $('#'+this.domId).tooltip(valid?'hide':'show');
+            return valid;
         }
         return true;
     }
@@ -189,7 +219,7 @@ class Input extends React.Component {
      *********************/
     changeHandler = (e) => {
         let state = {
-            value: e.target.value
+            value: e.target?e.target.value:e,
         };
 
         this.setState(state, () => {
@@ -235,6 +265,74 @@ class Input extends React.Component {
         }
     };
 
+    focusClearHandler = (e)=>{
+        this.isFocus = true;
+        if (this.clearIcon) {
+            this.setState({
+                icon: 'times-circle',
+            });
+            // this.clearIcon.setIcon('times-circle');
+        }
+    };
+
+    //is multi show
+    showMulti = (e) => {
+        let width = this.input.offsetWidth;
+        // let xy = common.GetDomXY(this.input,this.input.parentNode);
+        // this.input.style.width = width+'px';
+        // this.multi.classList.remove('d-none');
+        // this.multi.style.left = xy.left+'px';
+        // this.multi.style.top = xy.top+'px';
+        // this.multi.style.width = width+'px';
+        // this.multi.style.height = this.props.multi.height ?? '100px';
+        // this.input.style.height = this.props.multi.height ?? '100px';
+        this.input.classList.add('ck-input-multi-show','shadow');
+        this.input.style.height = this.props.multi.height ?? '100px';
+    };
+
+    //is multi hide
+    hideMulti = (e) => {
+        this.input.style.height = 'calc(1.5em + .75rem + 2px)';
+        setTimeout(()=>{
+            this.input.classList.remove('ck-input-multi-show','shadow');
+        },210)
+    };
+
+    blurClearHandler = ()=>{
+        this.isFocus = false;
+        if (this.clearIcon) {
+            if (this.props.combo) {
+                // this.clearIcon.setIcon('angle-down');
+                this.setState({
+                    icon: 'angle-down',
+                });
+            } else if (this.props.calendar) {
+                this.setState({
+                    icon: 'calendar-alt',
+                });
+                // this.clearIcon.setIcon('calendar-alt');
+            } else {
+                this.setState({
+                    icon: '',
+                });
+            }
+        }
+    };
+
+    dblHandler = (e)=> {
+        if (this.calendar && !this.state.value) {
+            this.calendar.setCurrentDate(new Date());
+            this.setState({value:this.calendar.format()},
+                () => {
+                    if (typeof this.props.onChange === 'function') {
+                        this.props.onChange(this.state.value, null, this);
+                    }
+                    this.calendar.hide();
+                }
+            )
+        }
+    };
+
     /*********************
      * render method
      *********************/
@@ -243,7 +341,7 @@ class Input extends React.Component {
             return null;
         }
         return (
-            <label htmlFor={this.domId}>{this.props.label}</label>
+            <label htmlFor={this.domId} className={this.props.labelClass}>{this.props.label}</label>
         )
     }
 
@@ -274,6 +372,10 @@ class Input extends React.Component {
             input_icon = classNames(input_icon, 'ck-input-calendar-icon-' + this.props.size);
         }
         let lang = i18n.getLang();
+        let props = {
+            format:this.props.calendar?.format ?? this.props.calendarFormat,
+            timeBar: this.props.calendar?.time ?? this.props.calendarTime,
+        };
         return (
             <div className='ck-input-calendar'>
                 <Calendar ref={c => this.calendar = c} onSelect={(val) => {
@@ -283,13 +385,19 @@ class Input extends React.Component {
                     if (this.props.onChange && typeof this.props.onChange === 'function') {
                         this.props.onChange(val, this);
                     }
-                }} value={this.state.value} format={this.props.calendarFormat}
+                }} value={this.state.value} format={props.format} timeBar={props.timeBar}
                           lang={lang.short} none shadow absolute
                           sm={this.props.size==='xs'}
                           triangular='up'/>
-                <div className={input_icon} onClick={() => {
-                    this.input.focus();
-                }}><Icon iconType='regular' icon='calendar-alt'/></div>
+                {!this.props.disabled?<div className={input_icon} onMouseDown={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (this.isFocus) {
+                        this.changeHandler("");
+                    } else {
+                        this.input.focus();
+                    }
+                }}><Icon ref={c=>this.clearIcon=c} icon={this.state.icon}/></div>:null}
             </div>
         )
     }
@@ -307,26 +415,95 @@ class Input extends React.Component {
                 <Combo ref={c => this.combo = c} {...this.props.combo} sm={this.props.size === 'sm' || this.props.size === 'xs'}
                        data={this.state.comboData} noSearch={this.props.readOnly} onShow={()=>{}}
                        onSelect={this.selectHandler}/>
-                <div className={input_icon} onClick={() => {
-                    this.input.focus();
-                }}><Icon icon='angle-down'/></div>
+                <div className={input_icon} onMouseDown={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (this.isFocus) {
+                        this.changeHandler("");
+                        if (this.props.combo.multi) {
+                            this.combo.clearMulti();
+                        }
+                    } else {
+                        this.input.focus();
+                    }
+                }}><Icon ref={c=>this.clearIcon=c} icon={this.state.icon}/></div>
             </div>
         )
     }
 
-    render() {
+    renderClear() {
+        if (this.props.disabled || this.props.combo ||
+            this.props.calendar || this.props.plaintext ||
+            this.props.disableClear) {
+            return null
+        }
+        let input_icon = 'ck-input-calendar-icon';
+        if (this.props.size) {
+            input_icon = classNames(input_icon, 'ck-input-calendar-icon-' + this.props.size);
+        }
         return (
-            <div className={this.getMainClasses()} style={this.getMainStyles()}>
+            <div className='ck-input-calendar'>
+                <div className={input_icon} onMouseDown={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (this.isFocus) {
+                        this.changeHandler("");
+                    } else {
+                        this.input.focus();
+                    }
+                }}><Icon ref={c=>this.clearIcon=c} icon={this.state.icon}/></div>
+            </div>
+        )
+    }
+
+    //build tooltip
+    renderValidateTip() {
+        if (this.props.validate) {
+            return {
+                'data-toggle':'tooltip',
+                'data-placement':'right',
+                'title':this.props.validate.text,
+            };
+        }
+        return {}
+    }
+
+    render() {
+        if (this.props.multi) {
+            return this.renderMulti();
+        }
+        return (
+            <div id={this.domId+'-main'} className={this.getMainClasses()} style={this.getMainStyles()} >
                 {this.renderLabel()}
                 <input type='text' {...this.props} ref={c => this.input = c} onBlur={this.blurHandler}
                        onChange={this.changeHandler}
                        onKeyUp={this.keyUpHandler}
-                       value={this.state.value}
+                       onDoubleClick={this.dblHandler}
+                       value={this.state.value??""}
                        className={this.getInputClasses()}
                        style={this.getInputStyle()}
-                       id={this.domId}/>
+                       id={this.domId} {...this.renderValidateTip()}/>
                 {this.renderCalendar()}
                 {this.renderCombo()}
+                {this.renderClear()}
+                {this.renderSummary()}
+            </div>
+        );
+    }
+
+    renderMulti() {
+        return (
+            <div id={this.domId+'-main'} className={this.getMainClasses()} style={this.getMainStyles()} >
+                {this.renderLabel()}
+                <textarea {...this.props} ref={c => this.input = c} onBlur={this.blurHandler}
+                    onChange={this.changeHandler}
+                    onKeyUp={this.keyUpHandler}
+                    onDoubleClick={this.dblHandler}
+                    value={this.state.value??""}
+                    className={this.getInputClasses()}
+                    style={this.getInputStyle()}
+                    id={this.domId} {...this.renderValidateTip()}/>
+                {this.renderClear()}
                 {this.renderSummary()}
             </div>
         );
@@ -343,11 +520,12 @@ Input.propTypes = {
     width         : PropTypes.string,
     height        : PropTypes.string,
     placeholder   : PropTypes.string,
-    calendar      : PropTypes.bool,
+    calendar      : PropTypes.object,
     onChange      : PropTypes.func,
     onEnter       : PropTypes.func,
     plaintext     : PropTypes.bool,
     calendarFormat: PropTypes.string,
+    calendarTime  : PropTypes.bool,
     validate      : PropTypes.object,  //{text:'',rule:/asdf/}
     disabled      : PropTypes.bool,
     combo         : PropTypes.object,
@@ -357,7 +535,10 @@ Input.propTypes = {
     y             : PropTypes.string,
     align         : PropTypes.string,
     textClass     : PropTypes.string,
-    textStyle     : PropTypes.object
+    textStyle     : PropTypes.object,
+    labelClass    : PropTypes.string,
+    disableClear  : PropTypes.bool,
+    multi         : PropTypes.object, //多行文本输入
 };
 
 Input.defaultProps = {
@@ -367,7 +548,8 @@ Input.defaultProps = {
     data    : null,
     summary : '',
     readOnly: false,
-    disabled: false
+    disabled: false,
+    disableClear: false,
 };
 
 export default Input;

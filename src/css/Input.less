@@ -2,6 +2,12 @@
   right: .75rem;
   bottom: .5rem;
   position: absolute;
+  &:hover {
+    color: #666666;
+  }
+  &:active {
+    transform: scale(.9);
+  }
 }
 
 .ck-input-calendar-icon-xs {
@@ -50,4 +56,21 @@
     border-color: #dc3545;
     box-shadow: 0 0 0 0.2rem rgba(220,53,69,.25);
   }
+}
+
+.ck-input-tip {
+  .arrow::before {
+    border-left-color: #dc3545;
+    border-right-color: #dc3545;
+  }
+}
+
+.ck-input-multi {
+  height: calc(1.5em + .75rem + 2px);
+  transition: height .2s ease-in;
+}
+
+.ck-input-multi-show {
+  position: absolute;
+  z-index: 100;
 }
